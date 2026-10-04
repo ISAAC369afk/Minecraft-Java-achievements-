@@ -1,0 +1,26 @@
+name: Build Minecraft Java Achievements
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build mcaddon
+        run: |
+          mkdir -p build
+          cd behavior_packs
+          zip -r ../build/java_advancements_BP.mcpack java_advancements_BP
+          cd ../resource_packs
+          zip -r ../build/java_advancements_RP.mcpack java_advancements_RP
+          cd ../build
+          zip -r Minecraft-Java-achievements.mcaddon java_advancements_BP.mcpack java_advancements_RP.mcpack
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Minecraft-Java-achievements-mcaddon
+          path: build/Minecraft-Java-achievements.mcaddon
