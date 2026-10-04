@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Java Advancements RP",
+    "description": "Recursos dos avanços Java para Bedrock",
+    "uuid": "8d6b7e50-4b9b-4f43-a0db-7c4f6e2a2001",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "8d6b7e50-4b9b-4f43-a0db-7c4f6e2a2002",
+      "version": [1, 0, 0]
+    }
+  ]
+}
