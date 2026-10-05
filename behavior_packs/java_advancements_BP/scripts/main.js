@@ -1,4 +1,4 @@
-import { world, system } from "@minecraft/server";
+import { world, system, ItemStack } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 
 const advancements = [
@@ -113,6 +113,26 @@ function grant(player, id) {
   return true;
 }
 
+function giveMenuCompass(player) {
+  try {
+    const inventory = player.getComponent("minecraft:inventory")?.container;
+    if (!inventory) return false;
+
+    for (let i = 0; i < inventory.size; i++) {
+      const item = inventory.getItem(i);
+      if (item?.typeId === "minecraft:compass") return true;
+    }
+
+    inventory.addItem(new ItemStack("minecraft:compass", 1));
+    player.sendMessage("§6[Java Advancements] §fBússola de §eAvanços §fadicionada ao seu inventário.");
+    player.sendMessage("§7Use a bússola a qualquer momento para abrir o menu.");
+    return true;
+  } catch (error) {
+    player.sendMessage("§c[Java Advancements] Não foi possível dar a bússola: §f" + error);
+    return false;
+  }
+}
+
 function grantAll(player) {
   let count = 0;
   for (const [id] of advancements) {
@@ -125,6 +145,7 @@ world.afterEvents.playerSpawn.subscribe((event) => {
   if (!event.initialSpawn) return;
   const player = event.player;
   grant(player, "story/root");
+  giveMenuCompass(player);
   player.sendMessage("§6[Java Advancements] §fSistema carregado: §e" + advancements.length + " avanços.");
   player.sendMessage("§e[Java Advancements] §fO menu será aberto automaticamente.");
   system.runTimeout(() => {
@@ -196,9 +217,7 @@ async function showAdvancementMenu(player) {
   return showAdvancementList(player, categories[result.selection]);
 }
 
-// O chatSend foi removido de propósito: no Bedrock 26.40 ele ainda depende da API beta 2.10.0.
- // Para manter o addon compatível sem ativar Beta APIs, o menu abre no primeiro spawn
- // e pode ser aberto novamente usando uma bússola.
+// O menu pode ser reaberto usando a bússola entregue no primeiro spawn.
 world.afterEvents.itemUse.subscribe((event) => {
   if (event.itemStack.typeId !== "minecraft:compass") return;
   system.run(() => {
