@@ -1,4 +1,5 @@
 import { world, system } from "@minecraft/server";
+import { ActionFormData } from "@minecraft/server-ui";
 
 const advancements = [
   ["story/root", "Minecraft"],
@@ -147,4 +148,53 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
   grant(player, id);
 });
 
-export { advancements, grant };
+
+const categoryOf = (id) => id.split("/")[0];
+
+async function showAdvancementList(player, category) {
+  const entries = advancements.filter(([id]) => categoryOf(id) === category);
+  const form = new ActionFormData()
+    .title("§6" + category.toUpperCase())
+    .body("§7Progresso: §f" + entries.filter(([id]) => hasAdvancement(player, id)).length + "§7/§f" + entries.length);
+  for (const [id, title] of entries) {
+    const done = hasAdvancement(player, id);
+    form.button((done ? "§a✓ " : "§8□ ") + title + "\n§7" + id);
+  }
+  form.button("§8← Voltar");
+  const result = await form.show(player);
+  if (result.canceled) return;
+  if (result.selection === entries.length) return showAdvancementMenu(player);
+  const [id, title] = entries[result.selection];
+  const detail = new ActionFormData()
+    .title((hasAdvancement(player, id) ? "§a✓ " : "§8□ ") + title)
+    .body("§7ID: §f" + id + "\n\n" + (hasAdvancement(player, id) ? "§aConcluído!" : "§eAinda não concluído."));
+  detail.button("§8Voltar");
+  const detailResult = await detail.show(player);
+  if (!detailResult.canceled) return showAdvancementList(player, category);
+}
+
+async function showAdvancementMenu(player) {
+  const categories = ["story", "nether", "end", "adventure", "husbandry"];
+  const done = advancements.filter(([id]) => hasAdvancement(player, id)).length;
+  const form = new ActionFormData()
+    .title("§6Java Advancements")
+    .body("§fProgresso: §e" + done + "§7/§e" + advancements.length + "\n§7Escolha uma categoria:");
+  for (const category of categories) {
+    const list = advancements.filter(([id]) => categoryOf(id) === category);
+    const count = list.filter(([id]) => hasAdvancement(player, id)).length;
+    form.button(category.toUpperCase() + "\n§7" + count + "/" + list.length);
+  }
+  const result = await form.show(player);
+  if (result.canceled) return;
+  return showAdvancementList(player, categories[result.selection]);
+}
+
+world.beforeEvents.chatSend.subscribe((event) => {
+  const message = event.message.trim().toLowerCase();
+  if (message !== "!conquistas" && message !== "!advancements") return;
+  event.cancel = true;
+  system.run(() => showAdvancementMenu(event.sender));
+});
+
+export { advancements, grant, showAdvancementMenu };
+
