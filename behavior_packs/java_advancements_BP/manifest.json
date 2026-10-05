@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Java Advancements BP",
+    "description": "81 avanços do Minecraft Java 1.16.1 para Bedrock",
+    "uuid": "8d6b7e50-4b9b-4f43-a0db-7c4f6e2a2101",
+    "version": [1, 1, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "8d6b7e50-4b9b-4f43-a0db-7c4f6e2a2102",
+      "version": [1, 1, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ]
+}
