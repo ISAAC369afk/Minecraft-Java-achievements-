@@ -126,7 +126,14 @@ world.afterEvents.playerSpawn.subscribe((event) => {
   const player = event.player;
   grant(player, "story/root");
   player.sendMessage("§6[Java Advancements] §fSistema carregado: §e" + advancements.length + " avanços.");
-  player.sendMessage("§7Teste: use /scriptevent java_advancements:grant_all");
+  player.sendMessage("§e[Java Advancements] §fO menu será aberto automaticamente.");
+  system.runTimeout(() => {
+    try {
+      showAdvancementMenu(player);
+    } catch (error) {
+      player.sendMessage("§c[Java Advancements] Erro ao abrir o menu: §f" + error);
+    }
+  }, 20);
 });
 
 // Testes e ferramentas internas. Não alteram os avanços oficiais do Xbox/Microsoft.
@@ -189,11 +196,18 @@ async function showAdvancementMenu(player) {
   return showAdvancementList(player, categories[result.selection]);
 }
 
-world.beforeEvents.chatSend.subscribe((event) => {
-  const message = event.message.trim().toLowerCase();
-  if (message !== "!conquistas" && message !== "!advancements") return;
-  event.cancel = true;
-  system.run(() => showAdvancementMenu(event.sender));
+// O chatSend foi removido de propósito: no Bedrock 26.40 ele ainda depende da API beta 2.10.0.
+ // Para manter o addon compatível sem ativar Beta APIs, o menu abre no primeiro spawn
+ // e pode ser aberto novamente usando uma bússola.
+world.afterEvents.itemUse.subscribe((event) => {
+  if (event.itemStack.typeId !== "minecraft:compass") return;
+  system.run(() => {
+    try {
+      showAdvancementMenu(event.source);
+    } catch (error) {
+      event.source.sendMessage("§c[Java Advancements] Erro ao abrir o menu: §f" + error);
+    }
+  });
 });
 
 export { advancements, grant, showAdvancementMenu };
